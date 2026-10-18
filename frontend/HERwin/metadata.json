@@ -1,0 +1,8 @@
+{
+  "name": "Mira — Student Well-being Companion",
+  "description": "A calm, thoughtful emotional well-being companion for university students, offering personalized micro-steps, mood tracking, and creative expression.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

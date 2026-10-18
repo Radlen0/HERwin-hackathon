@@ -1,0 +1,8 @@
+{
+  "name": "Remix Nefes — AI Student Well-being Companion",
+  "description": "An AI-powered emotional well-being companion designed for university students, offering personalized micro-steps, mood tracking, and guided breathing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
