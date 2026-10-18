@@ -8,6 +8,7 @@ import {
   User
 } from 'lucide-react';
 import { MascotBrain } from './components/mascots/MascotBrain';
+import { sendChatMessage } from './services/backend';
 import { MoodType, Language } from './types';
 
 export interface ChatMessage {
@@ -132,19 +133,12 @@ export const ChatbotScreen: React.FC<ChatbotScreenProps> = ({
     setIsLoading(true);
 
     try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: newMessages.map(m => ({ role: m.role, content: m.content })),
-          mood,
-          selectedProblems,
-          language
-        })
+      const botReply = await sendChatMessage({
+        messages: newMessages.map(m => ({ role: m.role, content: m.content })),
+        mood,
+        selectedProblems,
+        language
       });
-
-      const data = await res.json();
-      const botReply = data?.response || text.errorMsg;
 
       setMessages(prev => [
         ...prev,

@@ -975,8 +975,13 @@ Guidelines:
     }
 
     // Fallback response engine if Gemini offline
-    const isDerja = language === 'derja' || /nhebb|faddit|barcha|mch|chwaya|3aychek|tawa/i.test(latestUserMessage);
-    const isFrench = language === 'fr' || /je|stress|fatigue|cours|examen|peur|pression/i.test(latestUserMessage);
+    const hasExplicitLanguage = language === 'en' || language === 'fr' || language === 'derja';
+    const isDerja = hasExplicitLanguage
+      ? language === 'derja'
+      : /nhebb|faddit|barcha|mch|chwaya|3aychek|tawa/i.test(latestUserMessage);
+    const isFrench = hasExplicitLanguage
+      ? language === 'fr'
+      : /je|stress|fatigue|cours|examen|peur|pression/i.test(latestUserMessage);
     let reply = "";
 
     if (isDerja) {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   MessageSquareText,
   Palette,
@@ -6,11 +6,13 @@ import {
   ArrowRight,
   HeartHandshake,
   Compass,
-  Wind
+  Wind,
+  RefreshCw
 } from 'lucide-react';
 import { MascotBrain } from './components/mascots/MascotBrain';
 import { InspirationalCarousel } from './components/InspirationalCarousel';
-import { INSPIRATIONAL_MESSAGES } from './data/inspirationalMessages';
+import { INSPIRATIONAL_MESSAGES, InspirationalMessage } from './data/inspirationalMessages';
+import { fetchMotivationalSpeeches } from './services/backend';
 import { MoodType, Language } from './types';
 
 export interface HomeScreenProps {
@@ -45,6 +47,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       changeMood: "Change",
       inspirationsTitle: "Daily Reflection",
       inspirationsSubtitle: "3D interactive cards • Drag vertically or tap indicators to read",
+      refreshInspirations: "Refresh inspirations",
       quickActionsTitle: "Spaces & Tools",
       quickActionsSubtitle: "Instant access to your well-being toolkit",
       chatbotCard: {
@@ -78,6 +81,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       changeMood: "Modifier",
       inspirationsTitle: "Inspirations Quotidiennes",
       inspirationsSubtitle: "Cartes 3D interactives • Fais glisser verticalement pour lire",
+      refreshInspirations: "Actualiser les inspirations",
       quickActionsTitle: "Espaces & Outils",
       quickActionsSubtitle: "Accède directement à tes outils de bien-être",
       chatbotCard: {
@@ -111,6 +115,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       changeMood: "Baddel",
       inspirationsTitle: "Klem Mchajja3 w Rtiye7",
       inspirationsSubtitle: "Cartet 3D • Jarr el cartet l'fou9 w l'louta bech ta9ra",
+      refreshInspirations: "Jadded el klem el mchajja3",
       quickActionsTitle: "Khidmet el App",
       quickActionsSubtitle: "Adkhol toul l'ay khidma theb 3liha",
       chatbotCard: {
@@ -144,6 +149,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     changeMood: "Change",
     inspirationsTitle: "Daily Reflection",
     inspirationsSubtitle: "3D interactive cards • Drag vertically or tap indicators to read",
+    refreshInspirations: "Refresh inspirations",
     quickActionsTitle: "Spaces & Tools",
     quickActionsSubtitle: "Instant access to your well-being toolkit",
     chatbotCard: {
@@ -166,6 +172,27 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     },
     footerText: "Mira — Student Well-being Companion • Clean, Calm & University-Ready"
   };
+
+  const [inspirations, setInspirations] = useState<InspirationalMessage[]>(INSPIRATIONAL_MESSAGES);
+  const [isRefreshingInspirations, setIsRefreshingInspirations] = useState(false);
+
+  const loadInspirations = useCallback(async () => {
+    setIsRefreshingInspirations(true);
+    try {
+      const freshMessages = await fetchMotivationalSpeeches(language, mood);
+      if (freshMessages.length > 0) {
+        setInspirations(freshMessages);
+      }
+    } catch (err) {
+      console.error('Failed to load inspirations from backend, keeping local set:', err);
+    } finally {
+      setIsRefreshingInspirations(false);
+    }
+  }, [language, mood]);
+
+  useEffect(() => {
+    loadInspirations();
+  }, [loadInspirations]);
 
   return (
     <div className="min-h-screen w-full bg-[#FFF9E9] text-[#202019] font-sans selection:bg-[#E8E9AE] flex flex-col">
@@ -274,19 +301,32 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           
           {/* CAROUSEL SECTION: Placed FIRST on mobile so it is directly in front when opening */}
           <section className="order-1 lg:order-2 lg:col-span-6 space-y-3">
-            <div className="px-1">
-              <h2 className="text-base sm:text-lg font-black text-[#202019] tracking-tight">
-                {t.inspirationsTitle}
-              </h2>
-              <p className="text-xs text-[#737264] mt-0.5">
-                {t.inspirationsSubtitle}
-              </p>
+            <div className="px-1 flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-base sm:text-lg font-black text-[#202019] tracking-tight">
+                  {t.inspirationsTitle}
+                </h2>
+                <p className="text-xs text-[#737264] mt-0.5">
+                  {t.inspirationsSubtitle}
+                </p>
+              </div>
+
+              <button
+                onClick={loadInspirations}
+                disabled={isRefreshingInspirations}
+                title={t.refreshInspirations}
+                aria-label={t.refreshInspirations}
+                className="w-8 h-8 rounded-full bg-white border border-[#DDD6C0] flex items-center justify-center text-[#555447] hover:bg-[#FAF5E2] disabled:opacity-50 transition-all cursor-pointer shadow-2xs flex-shrink-0"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isRefreshingInspirations ? 'animate-spin' : ''}`} />
+              </button>
             </div>
 
             {/* The 3D Vertical Dragging Carousel */}
             <div className="bg-[#FAF6EC] border border-[#ECE7D4] rounded-3xl p-4 sm:p-5 shadow-xs flex flex-col items-center">
               <InspirationalCarousel
-                messages={INSPIRATIONAL_MESSAGES}
+                key={inspirations.map((item) => item.id).join('|')}
+                messages={inspirations}
                 language={language}
               />
             </div>
